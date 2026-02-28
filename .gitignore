@@ -38,6 +38,7 @@ pyright_analysis.txt
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*~
 
 # Virtual environments
 .env
