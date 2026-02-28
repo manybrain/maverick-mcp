@@ -7,6 +7,11 @@ WORKDIR /app
 
 # Install system dependencies and TA-Lib
 RUN apt-get update && apt-get install -yqq \
+  sudo \
+  git \
+  net-tools \
+  htop \
+  emacs-nox \
   build-essential \
   python3-dev \
   libpq-dev \
