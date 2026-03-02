@@ -363,17 +363,18 @@ if hasattr(mcp, "fastapi_app") and mcp.fastapi_app:
     mcp.fastapi_app.include_router(health_router, tags=["health"])
     logger.info("Monitoring and health endpoints registered with FastAPI application")
 
-# Add Enhanced Rate Limiting Middleware
-# Configure limits based on settings
-rate_limit_config = RateLimitConfig(
-    public_limit=settings.middleware.api_rate_limit_per_minute,
-    data_limit=settings.middleware.api_rate_limit_per_minute,
-    analysis_limit=max(
-        int(settings.middleware.api_rate_limit_per_minute / 2), 1
-    ),  # Analysis is more expensive
-)
-mcp.add_middleware(Middleware(EnhancedRateLimitMiddleware, config=rate_limit_config))
-logger.info("Enhanced Rate Limiting Middleware added to MCP server")
+# NOTE: EnhancedRateLimitMiddleware (BaseHTTPMiddleware) is an ASGI/HTTP-layer
+# middleware and cannot be added via mcp.add_middleware(), which expects a
+# FastMCP MCP-protocol Middleware subclass.  Passing a Starlette Middleware
+# container to mcp.add_middleware causes functools.partial() to raise
+# "the first argument must be callable" on every tools/list and tools/call
+# request, breaking all tool discovery and invocation.
+#
+# For a personal-use server, rate limiting adds no meaningful value.
+# If you need HTTP-level rate limiting in the future, apply it to the
+# underlying Starlette ASGI app (e.g., via the `middleware` argument of
+# create_sse_app / run_sse_async), not via mcp.add_middleware().
+logger.info("Rate limiting middleware skipped (personal-use server)")
 
 # Initialize enhanced health monitoring system
 logger.info("Initializing enhanced health monitoring system...")
